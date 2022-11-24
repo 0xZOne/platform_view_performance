@@ -1,3 +1,5 @@
+#import "EmbeddedUIView.h"
+#import "EmbeddedMTKView.h"
 #import "FLNativeView.h"
 
 @implementation FLNativeViewFactory {
@@ -32,15 +34,9 @@
                     arguments:(id _Nullable)args
               binaryMessenger:(NSObject<FlutterBinaryMessenger>*)messenger {
   if (self = [super init]) {
-    _view = [[UIView alloc] init];
-    _view.backgroundColor = [UIColor colorWithHue:drand48() saturation:1.0 brightness:1.0 alpha:1.0];
+      _view = [[EmbeddedUIView alloc] initWithViewId:viewId];
+//      _view = [[EmbeddedMTKView alloc] initWithViewId:viewId];
 
-    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(20, 40, 200, 40)];
-    label.text = [NSString stringWithFormat:@"Native view from IOS (id: %lld)", viewId];
-    label.textAlignment = NSTextAlignmentCenter;
-    label.adjustsFontSizeToFitWidth = YES;
-    label.textColor = [UIColor whiteColor];
-    [_view addSubview:label];
   }
 
   return self;
