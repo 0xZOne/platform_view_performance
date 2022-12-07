@@ -27,6 +27,26 @@
    UIView *_view;
 }
 
+- (double)displayRefreshRate {
+  CADisplayLink* display_link = [CADisplayLink displayLinkWithTarget:self selector:@selector(onDisplayLink:)];
+  display_link.paused = YES;
+  double preferredFPS = display_link.preferredFramesPerSecond;
+
+  // From Docs:
+  // The default value for preferredFramesPerSecond is 0. When this value is 0, the preferred
+  // frame rate is equal to the maximum refresh rate of the display, as indicated by the
+  // maximumFramesPerSecond property.
+ if (preferredFPS != 0) {
+    return preferredFPS;
+ }
+
+ return [UIScreen mainScreen].maximumFramesPerSecond;
+}
+
+- (void)onDisplayLink:(CADisplayLink*)link {
+  // no-op.
+}
+
 - (instancetype)initWithFrame:(CGRect)frame
                viewIdentifier:(int64_t)viewId
                     arguments:(id _Nullable)args
@@ -35,8 +55,8 @@
     _view = [[UIView alloc] init];
     _view.backgroundColor = [UIColor colorWithHue:drand48() saturation:1.0 brightness:1.0 alpha:1.0];
 
-    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(20, 40, 200, 40)];
-    label.text = [NSString stringWithFormat:@"Native view from IOS (id: %lld)", viewId];
+    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(20, 40, 300, 40)];
+    label.text = [NSString stringWithFormat:@"PlatformView (id: %lld, preferredFPS: %f)", viewId, [self displayRefreshRate]];
     label.textAlignment = NSTextAlignmentCenter;
     label.adjustsFontSizeToFitWidth = YES;
     label.textColor = [UIColor whiteColor];
