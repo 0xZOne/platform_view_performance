@@ -29,16 +29,19 @@ class MyApp extends StatelessWidget {
                     children: <Widget>[
                       Card(
                         elevation: 2.0,
-                        child: ListTile(
-                          title: Text('Flutter View: ${index + 1}'),
+                        child: SizedBox(
+                          height: 100,
+                          child: ListTile(
+                            tileColor: Colors.white,
+                            title: Text('Flutter View: ${index + 1}'),
+                          ),
                         ),
                       ),
                       const Card(
                         elevation: 2.0,
                         child: SizedBox(
-                          height: 120,
-                          // child: NativeView(),
-                          child: TextureWidget(width: width, height: height),
+                          height: 100,
+                          child: NativeView(),
                         ),
                       ),
                     ],
