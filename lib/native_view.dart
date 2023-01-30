@@ -1,28 +1,88 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
-class NativeView extends StatefulWidget {
-  const NativeView({Key? key}) : super(key: key);
+class NativeView extends StatelessWidget {
+  const NativeView(
+      {Key? key,
+      required this.usingHybridComposition,
+      required this.usingAndroidViewSurface})
+      : super(key: key);
 
-  @override
-  State<NativeView> createState() => _NativeViewState();
-}
+  final String viewType = '<simple-text-view>';
+  final bool usingAndroidViewSurface;
+  final bool usingHybridComposition;
 
-class _NativeViewState extends State<NativeView> {
   @override
   Widget build(BuildContext context) {
-    // This is used in the platform side to register the view.
-    const String viewType = '<simple-text-view>';
     // Pass parameters to the platform side.
-    final Map<String, dynamic> creationParams = <String, dynamic>{};
+    final Map<String, dynamic> creationParams = <String, dynamic>{
+      'HybridComposition': usingHybridComposition,
+      'AndroidViewSurface': usingAndroidViewSurface,
+    };
 
     switch (defaultTargetPlatform) {
+      case TargetPlatform.android:
+        if (usingAndroidViewSurface) {
+          return PlatformViewLink(
+            viewType: viewType,
+            surfaceFactory: (context, controller) {
+              return AndroidViewSurface(
+                controller: controller as AndroidViewController,
+                gestureRecognizers: const <
+                    Factory<OneSequenceGestureRecognizer>>{},
+                hitTestBehavior: PlatformViewHitTestBehavior.opaque,
+              );
+            },
+            onCreatePlatformView: (params) {
+              if (usingHybridComposition) {
+                // Hybrid composition
+                return PlatformViewsService.initExpensiveAndroidView(
+                  id: params.id,
+                  viewType: viewType,
+                  layoutDirection: TextDirection.ltr,
+                  creationParams: creationParams,
+                  creationParamsCodec: const StandardMessageCodec(),
+                  onFocus: () {
+                    params.onFocusChanged(true);
+                  },
+                )
+                  ..addOnPlatformViewCreatedListener(
+                      params.onPlatformViewCreated)
+                  ..create();
+              } else {
+                return PlatformViewsService.initSurfaceAndroidView(
+                  id: params.id,
+                  viewType: viewType,
+                  layoutDirection: TextDirection.ltr,
+                  creationParams: creationParams,
+                  creationParamsCodec: const StandardMessageCodec(),
+                  onFocus: () {
+                    params.onFocusChanged(true);
+                  },
+                )
+                  ..addOnPlatformViewCreatedListener(
+                      params.onPlatformViewCreated)
+                  ..create();
+              }
+            },
+          );
+        } else {
+          // Texture Layer Hybrid composition
+          return AndroidView(
+            viewType: viewType,
+            layoutDirection: TextDirection.ltr,
+            creationParams: creationParams,
+            creationParamsCodec: const StandardMessageCodec(),
+          );
+        }
       case TargetPlatform.iOS:
         return UiKitView(
           viewType: viewType,
           layoutDirection: TextDirection.ltr,
-          creationParams: creationParams,
+          creationParams: const <String, dynamic>{},
           creationParamsCodec: const StandardMessageCodec(),
         );
       default:

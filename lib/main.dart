@@ -1,52 +1,143 @@
+import 'dart:io' show Platform;
+
 import 'package:flutter/material.dart';
-import 'native_view.dart';
-import 'texture_widget.dart';
+
+import 'list_view.dart';
+import 'simple_webview.dart';
+import 'transform.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const MaterialApp(
+    title: 'PlatformView Demo',
+    home: HomeScreen(),
+  ));
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
+  @override
+  State<StatefulWidget> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  bool usingAndroidViewSurface = false;
+  bool usingHybridComposition = false;
+
   @override
   Widget build(BuildContext context) {
-    const double width = 300;
-    const double height = 120;
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text("Platform view Example"),
-        ),
-        body: ListView.builder(
-            itemCount: 1000,
-            itemBuilder: (context, index) => Padding(
-                  padding: const EdgeInsets.only(
-                      left: 10.0, top: 4.0, right: 10.0, bottom: 4.0),
-                  child: Column(
-                    children: <Widget>[
-                      Card(
-                        elevation: 2.0,
-                        child: SizedBox(
-                          height: 100,
-                          child: ListTile(
-                            tileColor: Colors.white,
-                            title: Text('Flutter View: ${index + 1}'),
-                          ),
-                        ),
-                      ),
-                      const Card(
-                        elevation: 2.0,
-                        child: SizedBox(
-                          height: 100,
-                          child: NativeView(),
-                        ),
-                      ),
-                    ],
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('PlatformView Demo'),
+      ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Expanded(
+            flex: 1,
+            child: Container(
+              alignment: Alignment.topRight,
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[
+                  Platform.isAndroid
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            const Text('UsingHybridComposition '),
+                            Switch(
+                              value: usingHybridComposition,
+                              onChanged: (value) {
+                                setState(() {
+                                  usingHybridComposition = value;
+                                  if (usingHybridComposition) {
+                                    usingAndroidViewSurface = true;
+                                  }
+                                });
+                              },
+                              activeTrackColor: Colors.green,
+                              activeColor: Colors.greenAccent,
+                            ),
+                          ],
+                        )
+                      : Container(),
+                  Platform.isAndroid
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            const Text('UsingAndroidViewSurface '),
+                            Switch(
+                              value: usingAndroidViewSurface,
+                              onChanged: (value) {
+                                setState(() {
+                                  usingAndroidViewSurface = value;
+                                  if (!usingAndroidViewSurface) {
+                                    usingHybridComposition = false;
+                                  }
+                                });
+                              },
+                              activeTrackColor: Colors.green,
+                              activeColor: Colors.greenAccent,
+                            ),
+                          ],
+                        )
+                      : Container(),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Container(
+              alignment: Alignment.center,
+              padding: const EdgeInsets.only(top: 16.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[
+                  ElevatedButton(
+                    child: const Text('List View'),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => PlatformViewListDemo(
+                                usingHybridComposition: usingHybridComposition,
+                                usingAndroidViewSurface:
+                                    usingAndroidViewSurface)),
+                      );
+                    },
                   ),
-                )),
+                  ElevatedButton(
+                    child: const Text('Matrix Transform'),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => TransformWidget(
+                                usingHybridComposition: usingHybridComposition,
+                                usingAndroidViewSurface:
+                                    usingAndroidViewSurface)),
+                      );
+                    },
+                  ),
+                  ElevatedButton(
+                    child: const Text('WebView'),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              SimpleWebView(url: 'https://www.uc.cn/'),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
