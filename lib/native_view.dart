@@ -19,8 +19,7 @@ class NativeView extends StatelessWidget {
   Widget build(BuildContext context) {
     // Pass parameters to the platform side.
     final Map<String, dynamic> creationParams = <String, dynamic>{
-      'HybridComposition': usingHybridComposition,
-      'AndroidViewSurface': usingAndroidViewSurface,
+      'RenderType': (usingHybridComposition ? 'HybridComposition' : 'TLHC'),
     };
 
     switch (defaultTargetPlatform) {
